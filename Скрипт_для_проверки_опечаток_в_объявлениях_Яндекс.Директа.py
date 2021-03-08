@@ -1,27 +1,23 @@
-#!/usr/bin/env python
-# coding: utf-8
+""" Скрипт извлекает и проверяет на описки/ошибки слова  в заголовках, подзаголовках, текстах, расширениях, заголовках и подзаголовках быстрых ссылок в объявлениях Яндекс Директа
 
-# In[ ]:
-
+Является обновленной и переработанной  версией скрипта данного автора: http://italylov.ru/blog/all/proverka-obyavleniy-direkta-na-opechatki/
+"""
 
 #!pip install pyaspeller
 import requests
 import pandas as pd
-from pyaspeller import YandexSpeller
+from pyaspeller import YandexSpeller 
 import re
 import _locale
 _locale._getdefaultlocale = (lambda *args: ['en_US', 'UTF-8'])
 
 
 access_token = '*****'  #OAuth-токен, как его получить: https://yandex.ru/dev/oauth/doc/dg/tasks/get-oauth-token.html
-login = '****'  #клиентский рекламный логин в Директе 
+login = '****'  #клиентский рекламный логин в Я.Директе 
 
 
 
-# ## Получаем список включенных текстовых кампаний
-
-
-
+### Получаем список включенных текстовых кампаний
 
 url = 'https://api.direct.yandex.com/json/v5/campaigns'
 
@@ -76,21 +72,13 @@ except KeyError:
     print(res.json()['error']['error_detail'])
 
 
+#camp_df
 
 
-
-camp_df
-
-
-# ## Все объявления из всех кампаний
-
-
+### Все объявления из всех кампаний
 
 
 campaigns = camp_df['Id'].unique().tolist()
-
-
-
 
 
 ads_dict = {}
@@ -157,9 +145,7 @@ for camp in campaigns:
 ads_df = pd.DataFrame(ads_dict)
 print(f'\nКол-во объявлений: {len(ads_df)}')
 
-ads_df.head()
-
-
+#ads_df.head()
 
 
 
@@ -169,9 +155,7 @@ print(f'Кол-во активных объявлений: {len(ads_df)}')
 
 
 
-
-
-# Выдащим все тексты
+# Извлечем все тексты
 
 texts_dict = {'Id': [], 'CampaignId' : []}
 
@@ -196,9 +180,7 @@ txtdata = txtdata.fillna('')
 txtdata.head()
 
 
-# ## ПАРСИМ УНИКАЛЬНЫЕ ЗАГОЛОВКИ
-
-
+### ПАРСИМ УНИКАЛЬНЫЕ ЗАГОЛОВКИ
 
 
 all_titles = txtdata['Title'].unique().tolist()
@@ -209,9 +191,7 @@ for title in all_titles:
     print(title)
 
 
-# ##  ПАРСИМ ВТОРЫЕ ЗАГОЛОВКИ
-
-
+###  ПАРСИМ ВТОРЫЕ ЗАГОЛОВКИ
 
 
 all_titles2 = txtdata['Title2'].unique().tolist()
@@ -222,9 +202,7 @@ for title2 in all_titles2:
     print(title2)
 
 
-# ## ПАРСИМ ТЕКСТЫ
-
-
+### ПАРСИМ ТЕКСТЫ
 
 
 all_txt = txtdata['Text'].unique().tolist()
@@ -235,8 +213,7 @@ for txt in all_txt:
     print(txt)
 
     
-# ## ПАРСИМ  БС
-
+### ПАРСИМ  БС
 
 # Сперва найдём уникальные ID быстрых ссылок
 
@@ -245,9 +222,7 @@ print('')
 print(f'Количество наборов быстрых ссылок: {len(SitelinkSetIds)}')
 
 
-
 # [int(x) for x in SitelinkSetIds if x != '']
-
 
 
 body = {
@@ -369,9 +344,7 @@ body = {
           
           "CalloutFieldNames": ["CalloutText"],
           "FieldNames": ["Id", "Associated", "Status", "State"]
-
-
-      
+     
     }
 }
 
@@ -396,7 +369,6 @@ while status in {201, 202, None}:
 
 
 
-
 ext_dict = {}
 
 for ad in res.json()['result']['AdExtensions']:
@@ -417,7 +389,7 @@ for x in all_unique_extensions:
     print(x)
     
     
-# ## НАЧИНАЕМ ПРОВЕРКУ НА ОПЕЧАТКИ
+### НАЧИНАЕМ ПРОВЕРКУ НА ОПЕЧАТКИ
 
 speller = YandexSpeller()
  
@@ -468,7 +440,6 @@ print('')
 print('Чекю подзаголовки...')
 
 print('') 
-
 
 
 
@@ -541,8 +512,7 @@ else:
     print(df_texts)
     
     
-# ### Чеким опечатки в Sitelinks
-
+#### Чеким опечатки в Sitelinks
 
 
 print('') 
@@ -619,8 +589,7 @@ else:
     
     
     
-# ## Проверка уточнений
-
+### Проверка уточнений
 
 
 print('') 
